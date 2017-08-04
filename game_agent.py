@@ -3,7 +3,7 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
-
+import math
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -211,10 +211,41 @@ class MinimaxPlayer(IsolationPlayer):
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
+        legal_moves = game.get_legal_moves()
+        if not legal_moves:
+            return (-1, -1)
+        
+        _, move = max([(self.min_value(game,depth,m) , m) for m in legal_moves])
+        return move
 
-        # TODO: finish this function!
-        raise NotImplementedError
+    def max_value(self,game,depth,move):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        new_game = game.forecast_move(move)
+        legal_moves = new_game.get_legal_moves()
+        if not legal_moves:
+            return game.utility()
 
+        v = -math.inf
+        if depth == 0:
+            return len(legal_moves)
+        else:
+            v = max([ (v,self.min_value(new_game,depth-1,m)) for m in legal_moves])
+            return v 
+
+    def min_value(self,game,depth,move):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        new_game = game.forecast_move(move)
+        legal_moves = new_game.get_legal_moves()
+        if not legal_moves:
+            return game.utility()
+        v = math.inf
+        if depth == 0:
+            return len(legal_moves)
+        else: 
+            v = min([ (v,self.max_value(new_game,depth-1,m)) for m in legal_moves])
+            return v
 
 class AlphaBetaPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using iterative deepening minimax
