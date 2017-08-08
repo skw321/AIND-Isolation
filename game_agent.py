@@ -39,7 +39,11 @@ def custom_score(game, player):
     if game.is_winner(player) or game.is_loser(player):
         return game.utility(player) 
 
-    return len(game.get_legal_moves())
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
+
+    #return len(game.get_legal_moves())
 
 
 def custom_score_2(game, player):
@@ -282,12 +286,15 @@ class AlphaBetaPlayer(IsolationPlayer):
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         best_move = (-1, -1)
-
+        iteration = True
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            return self.alphabeta(game, self.search_depth)
-
+            depth = 1
+            while iteration:
+                depth+=1
+                best_move = self.alphabeta(game, depth)
+        
         except SearchTimeout:
             pass  # Handle any actions required after timeout as needed
 
@@ -348,7 +355,7 @@ class AlphaBetaPlayer(IsolationPlayer):
             return (-1, -1)
       
         best_move = (-1,-1)
-        best_score = float('inf')
+        best_score = float('-inf')
         for m in legal_moves:
             v = self.min_value(game.forecast_move(m),depth-1,alpha,beta)
             if v > best_score:
