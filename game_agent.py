@@ -36,13 +36,25 @@ def custom_score(game, player):
     """
     # TODO: finish this function!
     # raise NotImplementedError
+
     if game.is_winner(player) or game.is_loser(player):
         return game.utility(player) 
 
-    own_moves_score = len(game.get_legal_moves(player))
-    opp_moves_score = len(game.get_legal_moves(game.get_opponent(player)))
+    moves_own = len(game.get_legal_moves(player))
+    moves_opp = len(game.get_legal_moves(game.get_opponent(player)))
+    board = game.height * game.width
+    moves_board = game.move_count / board
+    if moves_board > 0.33:
+        move_diff = (moves_own - moves_opp*2) 
+    else:
+        move_diff = (moves_own - moves_opp)
 
-    return float(own_moves_score - opp_moves_score)
+    pos_own = game.get_player_location(player)
+    pos_opp = game.get_player_location(game.get_opponent(player))
+
+    m_distance = abs(pos_own[0] - pos_opp[0]) + abs(pos_own[1] - pos_opp[1])
+
+    return float(move_diff / m_distance)
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -72,37 +84,33 @@ def custom_score_2(game, player):
     if game.is_winner(player) or game.is_loser(player):
         return game.utility(player) 
 
-    # my_moves = len(game.get_legal_moves(player))
-    # opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    moves_own = len(game.get_legal_moves(player))
+    moves_opp = len(game.get_legal_moves(game.get_opponent(player)))
+    board = game.height * game.width
+    moves_board = game.move_count / board
 
-    # if my_moves == 0:
-    #     return float("-inf")
+    pos_own = game.get_player_location(player)
+    pos_opp = game.get_player_location(game.get_opponent(player))
+    
+    pos_center = (int(game.height / 2), int(game.width / 2)) 
+    player_distance = abs(pos_own[0] - pos_center[0]) + abs(pos_own[1] - pos_center[1])
+    opponent_distance = abs(pos_opp[0] - pos_center[0]) + abs(pos_opp[1] - pos_center[1])   
+    center_diff = opponent_distance - player_distance
 
-    # if opponent_moves == 0:
-    #     return float("inf")
+    m_distance = abs(pos_own[0] - pos_opp[0]) + abs(pos_own[1] - pos_opp[1])
 
-    # return float( my_moves / opponent_moves )
+    if moves_board > 0.33:
+        if moves_own == moves_opp:
+            move_diff = moves_own - moves_opp*2 + center_diff
+        else: 
+            move_diff = moves_own - moves_opp*2      
+    else:
+        if moves_own == moves_opp:
+            move_diff = moves_own - moves_opp + center_diff
+        else: 
+            move_diff = moves_own - moves_opp
 
-    # opp_location = game.get_player_location(game.get_opponent(player))
-    # if opp_location == None:
-    #     return 0.
-
-    # own_location = game. get_player_location(player)
-    # if own_location == None:
-    #     return 0.
-
-    # return float(abs(sum(opp_location) - sum(own_location)))
-
-    own_moves_score = len(game.get_legal_moves(player))
-    opp_moves_score = len(game.get_legal_moves(game.get_opponent(player)))
-
-    center_y_pos, center_x_pos = int(game.height / 2), int(game.width / 2)
-    player_y_pos, player_x_pos = game.get_player_location(player)
-    opponent_y_pos, opponent_x_pos = game.get_player_location(game.get_opponent(player))
-    player_distance = abs(player_y_pos - center_y_pos) + abs(player_x_pos - center_x_pos)
-    opponent_distance = abs(opponent_y_pos - center_y_pos) + abs(opponent_x_pos - center_x_pos)
-    center_score = float(opponent_distance - player_distance)
-    return float(own_moves_score - opp_moves_score + center_score)
+    return float(move_diff / m_distance)
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -132,32 +140,35 @@ def custom_score_3(game, player):
     if game.is_winner(player) or game.is_loser(player):
         return game.utility(player) 
 
-    # my_moves = len(game.get_legal_moves(player))
-    # opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    moves_own = len(game.get_legal_moves(player))
+    moves_opp = len(game.get_legal_moves(game.get_opponent(player)))
+    board = game.height * game.width
+    moves_board = game.move_count / board
 
-    # if my_moves == 0:
-    #     return float("-inf")
+    pos_own = game.get_player_location(player)
+    pos_opp = game.get_player_location(game.get_opponent(player))
+    
+    pos_center = (int(game.height / 2), int(game.width / 2)) 
+    player_distance = abs(pos_own[0] - pos_center[0]) + abs(pos_own[1] - pos_center[1])
+    opponent_distance = abs(pos_opp[0] - pos_center[0]) + abs(pos_opp[1] - pos_center[1])   
+    center_diff = opponent_distance - player_distance
 
-    # if opponent_moves == 0:
-    #     return float("inf")
+    common_set = len(set(pos_own).intersection(set(pos_opp)))
 
-    # return float( -opponent_moves / my_moves)
+    m_distance = abs(pos_own[0] - pos_opp[0]) + abs(pos_own[1] - pos_opp[1])
 
-    own_moves = game.get_legal_moves(player)
-    opp_moves = game.get_legal_moves(game.get_opponent(player))
-    own_moves_score = len(own_moves)
-    opp_moves_score = len(opp_moves)
+    if moves_board > 0.33:
+        if moves_own == moves_opp:
+            move_diff = moves_own - moves_opp*2 + center_diff + common_set
+        else: 
+            move_diff = moves_own - moves_opp*2       
+    else:
+        if moves_own == moves_opp:
+            move_diff = moves_own - moves_opp + center_diff + common_set
+        else: 
+            move_diff = moves_own - moves_opp
 
-    center_y_pos, center_x_pos = int(game.height / 2), int(game.width / 2)
-    player_y_pos, player_x_pos = game.get_player_location(player)
-    opponent_y_pos, opponent_x_pos = game.get_player_location(game.get_opponent(player))
-    player_distance = abs(player_y_pos - center_y_pos) + abs(player_x_pos - center_x_pos)
-    opponent_distance = abs(opponent_y_pos - center_y_pos) + abs(opponent_x_pos - center_x_pos)
-
-    center_score = float(opponent_distance - player_distance)
-    common_score = float (len(set(own_moves).intersection(set(opp_moves))))
-
-    return float(own_moves_score - opp_moves_score + center_score + common_score)
+    return float(move_diff / m_distance)
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
